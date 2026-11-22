@@ -1,112 +1,31 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>إملاء النجوم</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Baloo+Bhaijaan+2:wght@500;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/styles.css">
+    <meta charset="UTF-8">
+    <title>إملاء النجوم</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div class="sky" aria-hidden="true">
-    <span class="sun"></span>
-    <span class="cloud cloud-a"></span>
-    <span class="cloud cloud-b"></span>
-    <span class="balloon balloon-a"></span>
-    <span class="balloon balloon-b"></span>
-  </div>
-  <div id="confetti" class="confetti" aria-hidden="true"></div>
-
-  <main class="stage">
-    <section id="screen-welcome" class="card screen" aria-labelledby="welcome-title">
-      <p class="logo" aria-hidden="true">🌟</p>
-      <h1 id="welcome-title">إملاء النجوم</h1>
-      <p class="lead">اسمع الكلمة، ثم اكتبها بالحروف الصحيحة.</p>
-      <ol class="steps">
-        <li><span>١</span> استمع</li>
-        <li><span>٢</span> اكتب</li>
-        <li><span>٣</span> تحقق</li>
-      </ol>
-      <form id="welcome-form">
-        <label class="field" id="name-field">
-          <span class="field-label" id="name-label">ما اسمك؟</span>
-          <input id="student-name" name="student-name" type="text" maxlength="24" autocomplete="nickname" enterkeyhint="go" placeholder="اكتب اسمك هنا" aria-labelledby="name-label">
-        </label>
-        <p id="name-error" class="field-error" hidden>اكتب اسمك حتى نبدأ اللعب.</p>
-        <button class="btn btn-primary" type="submit">ابدأ اللعب</button>
-      </form>
-    </section>
-
-    <section id="screen-quiz" class="card screen" hidden aria-labelledby="quiz-heading">
-      <header class="quiz-top">
-        <p class="hello">مرحباً يا <strong id="quiz-name"></strong></p>
-        <p id="quiz-progress" class="progress-label">الكلمة ١ من ١٠</p>
-      </header>
-      <div id="progress-dots" class="dots" aria-hidden="true"></div>
-      <h2 id="quiz-heading" class="sr-only">اكتب الكلمة التي تسمعها</h2>
-
-      <div class="listen-row">
-        <button id="listen-btn" class="btn btn-listen" type="button">
-          <span class="btn-emoji" aria-hidden="true">🔊</span>
-          <span>
-            <span class="btn-title">استمع للكلمة</span>
-            <span class="btn-en">Listen</span>
-          </span>
-        </button>
-        <button id="repeat-btn" class="btn btn-ghost" type="button">أعد الاستماع</button>
-      </div>
-      <p id="speech-status" class="status" role="status"></p>
-
-      <form id="answer-form">
-        <label class="field" for="answer-input">اكتب الكلمة</label>
-        <input id="answer-input" class="answer-input" type="text" lang="ar" dir="rtl" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" enterkeyhint="done" placeholder="اكتب هنا">
-        <p id="letter-hint" class="hint"></p>
-        <button id="submit-btn" class="btn btn-primary" type="submit">
-          <span class="btn-title">تحقق</span>
-          <span class="btn-en">Submit</span>
-        </button>
-      </form>
-
-      <div id="feedback" class="feedback" hidden role="status" aria-live="polite">
-        <p id="feedback-emoji" class="feedback-emoji" aria-hidden="true"></p>
-        <p id="feedback-message" class="feedback-message"></p>
-        <div id="feedback-detail" class="feedback-detail"></div>
-        <button id="next-btn" class="btn btn-next" type="button">الكلمة التالية</button>
-      </div>
-    </section>
-
-    <section id="screen-done" class="card screen" hidden aria-labelledby="done-title">
-      <p class="logo" aria-hidden="true">🎉</p>
-      <h2 id="done-title">أحسنت يا <span id="done-name"></span>!</h2>
-      <p id="done-cheer" class="lead"></p>
-      <p class="score" aria-live="polite">
-        <span id="score-value">٠</span>
-        <span class="score-of">من</span>
-        <span id="score-total">٠</span>
-      </p>
-      <h3 class="summary-title">كلماتك</h3>
-      <div id="summary" class="summary"></div>
-      <div class="done-actions">
-        <button id="replay-btn" class="btn btn-primary" type="button">أعد الاختبار</button>
-        <button id="new-student-btn" class="btn btn-ghost" type="button">اسم جديد</button>
-      </div>
-    </section>
-  </main>
-
-  <!--
-    Script order is the module boundary: each file adds one piece to window.Imla.
-    config -> words -> normalize -> speech -> audio -> records -> quiz -> ui -> app
-  -->
-  <script src="js/config.js"></script>
-  <script src="js/words.js"></script>
-  <script src="js/normalize.js"></script>
-  <script src="js/speech.js"></script>
-  <script src="js/audio.js"></script>
-  <script src="js/records.js"></script>
-  <script src="js/quiz.js"></script>
-  <script src="js/ui.js"></script>
-  <script src="js/app.js"></script>
+    <div id="app">
+        <div id="game-screen">
+            <h1>إملاء النجوم</h1>
+            <div id="inputs-container"></div>
+            <button onclick="playDictation()">ابدأ اللعب</button>
+        </div>
+        <button id="admin-login-btn" onclick="showLogin()">دخول المعلم</button>
+        <div id="login-modal" class="hidden">
+            <input type="password" id="password-input" placeholder="كلمة السر">
+            <button onclick="checkPassword()">دخول</button>
+        </div>
+        <div id="admin-screen" class="hidden">
+            <h2>لوحة تحكم المعلم</h2>
+            <div id="admin-words-container"></div>
+            <button onclick="addWordInput('')">إضافة كلمة</button>
+            <br><br>
+            <input type="email" id="email-input">
+            <button onclick="saveAdminSettings()">حفظ الإعدادات</button>
+        </div>
+    </div>
+    <script src="app.js"></script>
 </body>
 </html>
