@@ -1,88 +1,387 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>مغامرة الإملاء</title>
-    <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;900&display=swap" rel="stylesheet">
-</head>
-<body>
+:root {
+    --card-bg: #ffffff;
+    --primary: #ff9800;
+    --primary-dark: #f57c00;
+    --secondary: #00bcd4;
+    --secondary-dark: #0097a7;
+    --success: #4caf50;
+    --error: #f44336;
+    --warning: #fb8c00;
+    --text-dark: #263238;
+}
 
-    <div class="main-container">
-        <!-- الشريط العلوي -->
-        <header class="app-header">
-            <div class="progress-badge" id="word-counter">الكلمة 1 من 5</div>
-            <div class="stars-badge">النجوم: <span id="star-count">0</span> ⭐</div>
-        </header>
+* {
+    box-sizing: border-box;
+    font-family: 'Cairo', sans-serif;
+    margin: 0;
+    padding: 0;
+}
 
-        <h1 class="game-title">🚀 مغامرة الإملاء الذكي</h1>
+body {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 16px;
+    color: var(--text-dark);
+}
 
-        <!-- شاشة اللعب الرئيسية -->
-        <div id="game-area">
-            <div class="audio-card">
-                <button onclick="playCurrentWord()" class="btn-listen" id="listen-btn" title="اضغط لسماع الكلمة">
-                    🔊
-                </button>
-                <p class="listen-hint">اضغط على السماعة لتسمع الكلمة بوضوح</p>
-            </div>
+.hidden {
+    display: none !important;
+}
 
-            <div class="input-wrapper">
-                <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off" spellcheck="false">
-            </div>
+.main-container {
+    background: var(--card-bg);
+    width: 100%;
+    max-width: 580px;
+    border-radius: 30px;
+    padding: 28px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.12);
+    text-align: center;
+    border: 4px solid #ffffff;
+}
 
-            <div class="controls-row">
-                <button onclick="checkAnswer()" class="btn btn-check" id="check-btn">تحقق من إجابتي ✅</button>
-                <button onclick="nextWord()" class="btn btn-next" id="next-btn">الكلمة التالية ⬅️</button>
-            </div>
+.app-header {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
 
-            <div id="feedback-box" class="feedback-box"></div>
-        </div>
+.progress-badge, .attempt-badge, .stars-badge {
+    padding: 7px 15px;
+    border-radius: 50px;
+    font-size: 1rem;
+    font-weight: 800;
+}
 
-        <!-- شاشة النهاية (تظهر بعد الانتهاء من جميع الكلمات) -->
-        <div id="end-screen" class="end-screen hidden">
-            <div class="trophy-icon">🏆</div>
-            <h2>أحسنت يا بطل! أنهيت التحدي</h2>
-            <p class="final-score">مجموع نجومك: <span id="final-stars">0</span> ⭐</p>
-            <button onclick="restartGame()" class="btn btn-restart">إعادة التحدي من البداية 🔄</button>
-        </div>
+.progress-badge {
+    background: #e1f5fe;
+    border: 2px solid #81d4fa;
+    color: #0277bd;
+}
 
-        <!-- قسم دخول المعلم -->
-        <footer class="app-footer">
-            <button onclick="toggleLoginBox()" class="btn-teacher-link">🔒 دخول المعلم</button>
-            
-            <div id="login-box" class="login-box hidden">
-                <input type="password" id="admin-password" placeholder="أدخل رمز المعلم">
-                <button onclick="loginAdmin()" class="btn-login-submit">دخول</button>
-            </div>
-        </footer>
-    </div>
+.attempt-badge {
+    background: #ede7f6;
+    border: 2px solid #b39ddb;
+    color: #4527a0;
+}
 
-    <!-- نافذة لوحة تحكم المعلم (مخفية تماماً ولا تظهر إلا بعد إدخال الرمز الصحيح) -->
-    <div id="teacher-modal" class="modal-overlay hidden">
-        <div class="modal-card">
-            <div class="modal-header">
-                <h2>⚙️ إعدادات المعلم</h2>
-                <button onclick="closeTeacherPanel()" class="btn-close">✖</button>
-            </div>
+.stars-badge {
+    background: #fff8e1;
+    border: 2px solid #ffe082;
+    color: #e65100;
+}
 
-            <div class="modal-body">
-                <label class="section-label">قائمة كلمات الإملاء (يُفضل كتابتها بالتشكيل):</label>
-                <div id="words-container" class="words-list"></div>
-                <button onclick="addWordField('')" class="btn-add-word">+ إضافة كلمة جديدة</button>
+.game-title {
+    font-size: 2.1rem;
+    font-weight: 900;
+    color: #37474f;
+    margin-bottom: 22px;
+}
 
-                <hr class="divider">
+.audio-card {
+    background: #f3e5f5;
+    border-radius: 25px;
+    padding: 22px;
+    margin-bottom: 22px;
+    border: 3px dashed #ce93d8;
+}
 
-                <label class="section-label">بريد المتابعة الإلكتروني:</label>
-                <input type="email" id="teacher-email" class="modal-input" placeholder="teacher@school.com">
-            </div>
+.btn-listen {
+    background: var(--primary);
+    border: none;
+    width: 88px;
+    height: 88px;
+    border-radius: 50%;
+    font-size: 2.9rem;
+    cursor: pointer;
+    box-shadow: 0 8px 20px rgba(255, 152, 0, 0.4);
+    transition: transform 0.2s, background 0.2s;
+}
 
-            <div class="modal-footer">
-                <button onclick="saveSettings()" class="btn btn-save">حفظ التغييرات وبدء اللعب 💾</button>
-            </div>
-        </div>
-    </div>
+.btn-listen:hover {
+    transform: scale(1.08);
+    background: var(--primary-dark);
+}
 
-    <script src="js/app.js"></script>
-</body>
-</html>
+.listen-hint {
+    margin-top: 12px;
+    font-size: 1.15rem;
+    font-weight: 700;
+    color: #6a1b9a;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 16px;
+    font-size: 1.75rem;
+    font-weight: 700;
+    text-align: center;
+    border: 4px solid #b2ebf2;
+    border-radius: 20px;
+    outline: none;
+    transition: border-color 0.3s;
+    margin-bottom: 18px;
+}
+
+.input-wrapper input:focus {
+    border-color: var(--secondary);
+}
+
+.controls-row {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    flex: 1;
+    padding: 15px;
+    font-size: 1.2rem;
+    font-weight: 800;
+    border: none;
+    border-radius: 18px;
+    cursor: pointer;
+    transition: transform 0.2s, opacity 0.2s;
+}
+
+.btn:hover:not(:disabled) {
+    transform: translateY(-2px);
+}
+
+.btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.btn-check {
+    background: var(--success);
+    color: white;
+    box-shadow: 0 6px 15px rgba(76, 175, 80, 0.3);
+}
+
+.btn-next {
+    background: var(--secondary);
+    color: white;
+    box-shadow: 0 6px 15px rgba(0, 188, 212, 0.3);
+}
+
+.feedback-box {
+    margin-top: 22px;
+    min-height: 55px;
+    font-size: 1.35rem;
+    font-weight: 900;
+    line-height: 1.5;
+}
+
+.feedback-success {
+    color: var(--success);
+    animation: popIn 0.4s ease;
+}
+
+.feedback-warning {
+    color: var(--warning);
+    animation: shake 0.35s ease;
+}
+
+.feedback-error {
+    color: var(--error);
+}
+
+@keyframes popIn {
+    0% { transform: scale(0.85); opacity: 0; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+@keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
+}
+
+/* شاشة النهاية */
+.end-screen {
+    padding: 25px 10px;
+}
+
+.trophy-icon {
+    font-size: 4.8rem;
+    margin-bottom: 12px;
+    animation: popIn 0.6s ease;
+}
+
+.end-screen h2 {
+    font-size: 1.9rem;
+    color: #2e7d32;
+    margin-bottom: 12px;
+}
+
+.final-score {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin-bottom: 22px;
+    color: #f57c00;
+}
+
+.btn-restart {
+    background: var(--primary);
+    color: white;
+    width: 100%;
+}
+
+/* تذييل الصفحة ودخول المعلم */
+.app-footer {
+    margin-top: 25px;
+    padding-top: 15px;
+    border-top: 2px dashed #eceff1;
+}
+
+.btn-teacher-link {
+    background: none;
+    border: none;
+    color: #78909c;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+.login-box {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+}
+
+.login-box input {
+    padding: 10px 15px;
+    border: 2px solid #cfd8dc;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    text-align: center;
+}
+
+.btn-login-submit {
+    background: #546e7a;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+}
+
+/* نافذة إعدادات المعلم المنبثقة */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.65);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 20px;
+}
+
+.modal-card {
+    background: white;
+    width: 100%;
+    max-width: 500px;
+    border-radius: 25px;
+    padding: 25px;
+    text-align: right;
+    max-height: 90vh;
+    overflow-y: auto;
+    box-shadow: 0 20px 50px rgba(0, 0, 0, 0.3);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.btn-close {
+    background: #ffebee;
+    color: #c62828;
+    border: none;
+    width: 35px;
+    height: 35px;
+    border-radius: 50%;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.section-label {
+    display: block;
+    font-weight: 800;
+    margin-bottom: 10px;
+    font-size: 1.1rem;
+}
+
+.word-item-row {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.word-item-row input {
+    flex: 1;
+    padding: 10px;
+    border: 2px solid #cfd8dc;
+    border-radius: 10px;
+    font-size: 1.2rem;
+}
+
+.btn-remove {
+    background: #ef5350;
+    color: white;
+    border: none;
+    padding: 0 15px;
+    border-radius: 10px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.btn-add-word {
+    background: #29b6f6;
+    color: white;
+    border: none;
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-weight: 700;
+    cursor: pointer;
+    margin-top: 5px;
+}
+
+.divider {
+    margin: 20px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+.modal-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #cfd8dc;
+    border-radius: 10px;
+    font-size: 1.1rem;
+}
+
+.modal-footer {
+    margin-top: 25px;
+}
+
+.btn-save {
+    background: var(--success);
+    color: white;
+    width: 100%;
+}
