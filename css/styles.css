@@ -1,110 +1,88 @@
-:root {
-    --primary: #ffd700;
-    --primary-grad: linear-gradient(135deg, #ffb300, #ff8f00);
-    --secondary: #673ab7;
-    --secondary-grad: linear-gradient(135deg, #9575cd, #512da8);
-    --success: #4caf50;
-    --error: #f44336;
-    --text: #333;
-    --bg-gradient: linear-gradient(135deg, #8bc34a, #00bcd4, #2196f3);
-}
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مغامرة الإملاء</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;900&display=swap" rel="stylesheet">
+</head>
+<body>
 
-* { box-sizing: border-box; font-family: 'Cairo', sans-serif; }
+    <div class="main-container">
+        <!-- الشريط العلوي -->
+        <header class="app-header">
+            <div class="progress-badge" id="word-counter">الكلمة 1 من 5</div>
+            <div class="stars-badge">النجوم: <span id="star-count">0</span> ⭐</div>
+        </header>
 
-body {
-    margin: 0; min-height: 100vh;
-    display: flex; justify-content: center; align-items: center;
-    background: var(--bg-gradient); background-size: 400% 400%;
-    animation: gradientShift 15s ease infinite; padding: 10px;
-}
+        <h1 class="game-title">🚀 مغامرة الإملاء الذكي</h1>
 
-@keyframes gradientShift {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-}
+        <!-- شاشة اللعب الرئيسية -->
+        <div id="game-area">
+            <div class="audio-card">
+                <button onclick="playCurrentWord()" class="btn-listen" id="listen-btn" title="اضغط لسماع الكلمة">
+                    🔊
+                </button>
+                <p class="listen-hint">اضغط على السماعة لتسمع الكلمة بوضوح</p>
+            </div>
 
-.app-card {
-    background: rgba(255, 255, 255, 0.95); width: 100%; max-width: 450px;
-    padding: 25px; border-radius: 30px; box-shadow: 0 15px 35px rgba(0,0,0,0.2);
-    text-align: center; position: relative; z-index: 10;
-}
+            <div class="input-wrapper">
+                <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off" spellcheck="false">
+            </div>
 
-header h1 { color: #d84315; margin: 10px 0; font-size: 1.8rem; text-shadow: 1px 1px 2px rgba(0,0,0,0.1); }
+            <div class="controls-row">
+                <button onclick="checkAnswer()" class="btn btn-check" id="check-btn">تحقق من إجابتي ✅</button>
+                <button onclick="nextWord()" class="btn btn-next" id="next-btn">الكلمة التالية ⬅️</button>
+            </div>
 
-.score-board {
-    display: inline-block; background: #fffde7; padding: 8px 20px;
-    border-radius: 50px; font-weight: 900; font-size: 1.2rem; color: #f57c00;
-    border: 2px solid #ffe082; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
-}
+            <div id="feedback-box" class="feedback-box"></div>
+        </div>
 
-.word-stage {
-    margin: 30px 0; background: #f0f4c3; padding: 20px; border-radius: 20px;
-    display: flex; flex-direction: column; align-items: center; gap: 15px;
-}
+        <!-- شاشة النهاية (تظهر بعد الانتهاء من جميع الكلمات) -->
+        <div id="end-screen" class="end-screen hidden">
+            <div class="trophy-icon">🏆</div>
+            <h2>أحسنت يا بطل! أنهيت التحدي</h2>
+            <p class="final-score">مجموع نجومك: <span id="final-stars">0</span> ⭐</p>
+            <button onclick="restartGame()" class="btn btn-restart">إعادة التحدي من البداية 🔄</button>
+        </div>
 
-.btn-sound {
-    background: #ffb300; border: none; border-radius: 50%; width: 70px; height: 70px;
-    color: white; cursor: pointer; display: flex; justify-content: center; align-items: center;
-    box-shadow: 0 6px 15px rgba(255, 179, 0, 0.5); transition: transform 0.2s, background 0.2s;
-}
-.btn-sound:hover { transform: scale(1.1); background: #ffa000; }
+        <!-- قسم دخول المعلم -->
+        <footer class="app-footer">
+            <button onclick="toggleLoginBox()" class="btn-teacher-link">🔒 دخول المعلم</button>
+            
+            <div id="login-box" class="login-box hidden">
+                <input type="password" id="admin-password" placeholder="أدخل رمز المعلم">
+                <button onclick="loginAdmin()" class="btn-login-submit">دخول</button>
+            </div>
+        </footer>
+    </div>
 
-.instruction-text { font-weight: bold; color: #555; }
+    <!-- نافذة لوحة تحكم المعلم (مخفية تماماً ولا تظهر إلا بعد إدخال الرمز الصحيح) -->
+    <div id="teacher-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>⚙️ إعدادات المعلم</h2>
+                <button onclick="closeTeacherPanel()" class="btn-close">✖</button>
+            </div>
 
-input[type="text"], input[type="password"], input[type="email"] {
-    width: 100%; padding: 15px; border: 3px solid #b2ebf2; border-radius: 15px;
-    font-size: 1.5rem; text-align: center; outline: none; transition: border-color 0.3s;
-}
-input[type="text"]:focus { border-color: #00bcd4; }
+            <div class="modal-body">
+                <label class="section-label">قائمة كلمات الإملاء (يُفضل كتابتها بالتشكيل):</label>
+                <div id="words-container" class="words-list"></div>
+                <button onclick="addWordField('')" class="btn-add-word">+ إضافة كلمة جديدة</button>
 
-.action-buttons { display: flex; gap: 10px; margin-top: 20px; }
+                <hr class="divider">
 
-.btn {
-    flex: 1; padding: 15px; border: none; border-radius: 15px; font-size: 1.1rem;
-    font-weight: bold; cursor: pointer; transition: transform 0.2s, opacity 0.2s;
-}
-.btn-primary { background: var(--secondary-grad); color: white; }
-.btn-secondary { background: #e0e0e0; color: #333; }
-.btn:hover { opacity: 0.9; transform: translateY(-2px); }
+                <label class="section-label">بريد المتابعة الإلكتروني:</label>
+                <input type="email" id="teacher-email" class="modal-input" placeholder="teacher@school.com">
+            </div>
 
-.feedback { font-size: 1.6rem; font-weight: 900; min-height: 50px; margin-top: 20px; }
-.correct { color: var(--success); animation: bounce 0.5s; }
-.error { color: var(--error); }
+            <div class="modal-footer">
+                <button onclick="saveSettings()" class="btn btn-save">حفظ التغييرات وبدء اللعب 💾</button>
+            </div>
+        </div>
+    </div>
 
-@keyframes bounce {
-    0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
-    40% {transform: translateY(-20px);}
-    60% {transform: translateY(-10px);}
-}
-
-footer { margin-top: 25px; border-top: 1px dashed #ccc; padding-top: 15px; }
-.btn-admin-toggle { background: transparent; border: none; color: #78909c; cursor: pointer; font-size: 0.9rem; }
-
-.settings-modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.6); display: flex; justify-content: center; align-items: center;
-    z-index: 100; padding: 20px;
-}
-.modal-content {
-    background: white; width: 100%; max-width: 500px; padding: 25px;
-    border-radius: 25px; text-align: right; max-height: 90vh; overflow-y: auto;
-}
-
-.setting-group { margin: 20px 0; }
-.word-row { display: flex; gap: 10px; margin-bottom: 10px; }
-.btn-add { background: #81c784; color: white; border: none; padding: 8px 15px; border-radius: 8px; cursor: pointer; }
-.btn-save { background: #4caf50; color: white; width: 100%; padding: 15px; border-radius: 15px; font-size: 1.2rem; cursor: pointer; }
-.btn-delete { background: #e57373; color: white; border: none; padding: 10px; border-radius: 8px; cursor: pointer; }
-
-.hidden { display: none !important; }
-
-.star-element {
-    position: absolute; color: #ffd700; font-size: 1.5rem;
-    animation: fallingStar 4s linear infinite; pointer-events: none;
-}
-@keyframes fallingStar {
-    0% { transform: translateY(-10px) rotate(0deg); opacity: 0; }
-    50% { opacity: 1; }
-    100% { transform: translateY(100vh) rotate(360deg); opacity: 0; }
-}
+    <script src="js/app.js"></script>
+</body>
+</html>
