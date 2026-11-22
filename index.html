@@ -2,30 +2,78 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>إملاء النجوم</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>إملاء النجوم السحري</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div id="app">
+    <div class="stars-background" id="stars-container"></div>
+
+    <div class="app-card">
+        <header>
+            <div class="score-board">النجوم: <span id="star-count">0</span> ⭐</div>
+            <h1>✨ إملاء النجوم ✨</h1>
+        </header>
+
+        <!-- Game Screen -->
         <div id="game-screen">
-            <h1>إملاء النجوم</h1>
-            <div id="inputs-container"></div>
-            <button onclick="playDictation()">ابدأ اللعب</button>
+            <div class="word-stage">
+                <button onclick="playCurrentWord()" class="btn-sound" title="استمع للكلمة">
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor">
+                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.74 2.5-2.26 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
+                    </svg>
+                </button>
+                <div class="instruction-text">اضغط على السماعة واسمع الكلمة جيداً!</div>
+            </div>
+
+            <div class="input-group">
+                <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off">
+            </div>
+
+            <div class="action-buttons">
+                <button onclick="checkAnswer()" class="btn btn-primary">تحقق من الإجابة</button>
+                <button onclick="nextWord()" class="btn btn-secondary">الكلمة التالية ➡️</button>
+            </div>
+
+            <div id="feedback-message" class="feedback"></div>
         </div>
-        <button id="admin-login-btn" onclick="showLogin()">دخول المعلم</button>
-        <div id="login-modal" class="hidden">
-            <input type="password" id="password-input" placeholder="كلمة السر">
-            <button onclick="checkPassword()">دخول</button>
-        </div>
-        <div id="admin-screen" class="hidden">
-            <h2>لوحة تحكم المعلم</h2>
-            <div id="admin-words-container"></div>
-            <button onclick="addWordInput('')">إضافة كلمة</button>
-            <br><br>
-            <input type="email" id="email-input">
-            <button onclick="saveAdminSettings()">حفظ الإعدادات</button>
+
+        <!-- Admin Section -->
+        <footer>
+            <button onclick="toggleAdminLogin()" class="btn-admin-toggle">🔒 لوحة المعلم</button>
+            
+            <div id="admin-login-modal" class="admin-modal hidden">
+                <input type="password" id="admin-pass" placeholder="أدخل كلمة المرور">
+                <button onclick="verifyAdmin()" class="btn-verify">دخول</button>
+            </div>
+        </footer>
+    </div>
+
+    <!-- Admin Panel Modal -->
+    <div id="admin-panel" class="settings-modal hidden">
+        <div class="modal-content">
+            <h2>⚙️ لوحة تحكم المعلم</h2>
+            
+            <div class="setting-group">
+                <h3>قائمة كلمات الإملاء:</h3>
+                <div id="words-inputs-list"></div>
+                <button onclick="addWordInput('')" class="btn-add">+ إضافة كلمة جديدة</button>
+            </div>
+
+            <hr>
+
+            <div class="setting-group">
+                <h3>إيميل المتابعة:</h3>
+                <input type="email" id="admin-email" placeholder="teacher@example.com">
+            </div>
+
+            <div class="modal-actions">
+                <button onclick="saveAdminSettings()" class="btn btn-save">حفظ ومتابعة اللعب</button>
+            </div>
         </div>
     </div>
-    <script src="app.js"></script>
+
+    <script src="js/app.js"></script>
 </body>
 </html>
