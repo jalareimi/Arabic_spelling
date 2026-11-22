@@ -1,133 +1,104 @@
-/*
- * Wires the three screens together.
- *
- * Flow: welcome (name) -> one word at a time -> score summary.
- * Speech and sound effects run from the button clicks so browsers
- * allow audio. Records.save() keeps each finished quiz for a future
- * history-by-date view. Records.buildEmail() is ready for a mailer;
- * Config.features.emailResults stays false until that exists.
- */
-(function () {
-  var quiz = null;
-  var speakToken = 0;
+let words = JSON.parse(localStorage.getItem('spelling_words')) || ['نَجْم', 'قَمَر'];
+let adminEmail = localStorage.getItem('admin_email') || 'teacher@example.com';
 
-  function cleanName(value) {
-    return String(value || "").replace(/\s+/g, " ").trim().slice(0, 24);
-  }
+document.addEventListener('DOMContentLoaded', () => {
+    initGame();
+    document.getElementById('email-input').value = adminEmail;
+});
 
-  function praise() {
-    var list = window.Imla.Config.praise;
-    return list[Math.floor(Math.random() * list.length)];
-  }
-
-  function playWord() {
-    var word = window.Imla.Quiz.current(quiz);
-    var token = ++speakToken;
-    window.Imla.UI.setSpeaking(true);
-    window.Imla.UI.setSpeechHint("أستمع إلى الكلمة...");
-    window.Imla.Speech.speak(word.text).then(function (result) {
-      if (token !== speakToken) return;
-      window.Imla.UI.setSpeaking(false);
-      if (!result.ok && result.reason !== "interrupted" && result.reason !== "canceled") {
-        window.Imla.UI.setSpeechHint("لم أستطع نطق الكلمة. اضغط «استمع للكلمة» مرة أخرى.");
-      }
+function initGame() {
+    const container = document.getElementById('inputs-container');
+    container.innerHTML = '';
+    words.forEach((word, index) => {
+        addWordInput(word);
     });
-  }
+}
 
-  function startQuiz(name) {
-    window.Imla.Audio.unlock();
-    window.Imla.Speech.cancel();
-    quiz = window.Imla.Quiz.create(name);
-    window.Imla.UI.clearConfetti();
-    window.Imla.UI.showScreen("quiz");
-    window.Imla.UI.renderQuestion(quiz);
-    playWord();
-  }
-
-  function onWelcomeSubmit(event) {
-    event.preventDefault();
-    var name = cleanName(window.Imla.UI.nameInput().value);
-    if (!name) {
-      window.Imla.UI.showNameError(true);
-      return;
+function addWordInput(value) {
+    const container = document.getElementById('inputs-container');
+    const input = document.createElement('input');
+    input.type = 'text';
+    input.value = value;
+    input.placeholder = 'أدخل الكلمة مع التشكيل';
+    container.appendChild(input);
+    if(container.children.length > words.length && value === '') {
+        input.focus();
     }
-    window.Imla.UI.showNameError(false);
-    window.Imla.UI.nameInput().value = name;
-    startQuiz(name);
-  }
+}
 
-  function onAnswerSubmit(event) {
-    event.preventDefault();
-    if (!quiz || quiz.answered) return;
-    window.Imla.Audio.unlock();
-    var result = window.Imla.Quiz.answer(quiz, window.Imla.UI.answerInput().value);
-    if (!result) return;
-
-    var message = result.correct ? praise() : window.Imla.Config.retryMessage;
-    window.Imla.UI.showFeedback(quiz, result, message);
-    if (result.correct) window.Imla.Audio.playCorrect();
-    else window.Imla.Audio.playRetry();
-    window.Imla.Speech.speak(message);
-  }
-
-  function onNext() {
-    if (!quiz || !quiz.answered) return;
-    window.Imla.Audio.unlock();
-    if (window.Imla.Quiz.isLast(quiz)) {
-      finishQuiz();
-      return;
+const observer = new MutationObserver(() => {
+    const inputs = document.querySelectorAll('#inputs-container input');
+    if (inputs.length > 0 && inputs[inputs.length - 1].value !== '') {
+        addWordInput('');
     }
-    window.Imla.Quiz.advance(quiz);
-    window.Imla.UI.renderQuestion(quiz);
-    playWord();
-  }
+});
+observer.observe(document.getElementById('inputs-container'), { childList: true });
 
-  function finishQuiz() {
-    var session = window.Imla.Quiz.toSession(quiz);
-    window.Imla.Records.save(session);
-    window.Imla.UI.showSummary(session);
-    window.Imla.Audio.playCelebrate();
-    var line = "مبروك يا " + session.studentName + ". أنهيت الإملاء. نتيجتك " +
-      session.score + " من " + session.total + ".";
-    window.setTimeout(function () {
-      window.Imla.Speech.speak(line);
-    }, 700);
-  }
+function playDictation() {
+    const inputs = document.querySelectorAll('#inputs-container input');
+    let index = 0;
+    function speakNext() {
+        if (index < inputs.length) {
+            const text = inputs[index].value;
+            if(text) {
+                const utterance = new SpeechSynthesisUtterance(text);
+                utterance.lang = 'ar-XA';
+                utterance.rate = 0.8;
+                utterance.onend = () => {
+                    index++;
+                    speakNext();
+                };
+                window.speechSynthesis.speak(utterance);
+            } else {
+                index++;
+                speakNext();
+            }
+        }
+    }
+    speakNext();
+}
 
-  function onReplay() {
-    if (!quiz) return;
-    startQuiz(quiz.studentName);
-  }
+function showLogin() {
+    document.getElementById('login-modal').classList.remove('hidden');
+}
 
-  function onNewStudent() {
-    window.Imla.Speech.cancel();
-    speakToken += 1;
-    window.Imla.UI.setSpeaking(false);
-    quiz = null;
-    window.Imla.UI.showScreen("welcome");
-    window.Imla.UI.nameInput().focus();
-    window.Imla.UI.nameInput().select();
-  }
+function checkPassword() {
+    if(document.getElementById('password-input').value === '1234') {
+        document.getElementById('login-modal').classList.add('hidden');
+        document.getElementById('admin-screen').classList.remove('hidden');
+        renderAdminWords();
+    } else {
+        alert('كلمة مرور خاطئة');
+    }
+}
 
-  document.getElementById("welcome-form").addEventListener("submit", onWelcomeSubmit);
-  document.getElementById("answer-form").addEventListener("submit", onAnswerSubmit);
-  document.getElementById("listen-btn").addEventListener("click", function () {
-    if (!quiz) return;
-    window.Imla.Audio.unlock();
-    playWord();
-  });
-  document.getElementById("repeat-btn").addEventListener("click", function () {
-    if (!quiz) return;
-    window.Imla.Audio.unlock();
-    playWord();
-  });
-  document.getElementById("next-btn").addEventListener("click", onNext);
-  document.getElementById("replay-btn").addEventListener("click", onReplay);
-  document.getElementById("new-student-btn").addEventListener("click", onNewStudent);
+function renderAdminWords() {
+    const container = document.getElementById('admin-words-container');
+    container.innerHTML = '';
+    words.forEach(word => {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = word;
+        container.appendChild(input);
+    });
+}
 
-  document.getElementById("student-name").addEventListener("input", function () {
-    window.Imla.UI.showNameError(false);
-  });
+const adminObserver = new MutationObserver(() => {
+    const inputs = document.querySelectorAll('#admin-words-container input');
+    if (inputs.length > 0 && inputs[inputs.length - 1].value !== '') {
+        const input = document.createElement('input');
+        input.type = 'text';
+        document.getElementById('admin-words-container').appendChild(input);
+    }
+});
+adminObserver.observe(document.getElementById('admin-words-container'), { childList: true });
 
-  window.Imla.UI.showScreen("welcome");
-})();
+function saveAdminSettings() {
+    const inputs = document.querySelectorAll('#admin-words-container input');
+    words = Array.from(inputs).map(input => input.value).filter(val => val.trim() !== '');
+    adminEmail = document.getElementById('email-input').value;
+    localStorage.setItem('spelling_words', JSON.stringify(words));
+    localStorage.setItem('admin_email', adminEmail);
+    alert('تم حفظ الإعدادات بنجاح');
+    initGame();
+}
