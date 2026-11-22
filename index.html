@@ -3,73 +3,82 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>إملاء النجوم السحري</title>
+    <title>مغامرة الإملاء</title>
     <link rel="stylesheet" href="css/style.css">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@600;700;900&display=swap" rel="stylesheet">
 </head>
 <body>
-    <div class="stars-background" id="stars-container"></div>
 
-    <div class="app-card">
-        <header>
-            <div class="score-board">النجوم: <span id="star-count">0</span> ⭐</div>
-            <h1>✨ إملاء النجوم ✨</h1>
+    <div class="main-container">
+        <!-- الشريط العلوي -->
+        <header class="app-header">
+            <div class="progress-badge" id="word-counter">الكلمة 1 من 5</div>
+            <div class="stars-badge">النجوم: <span id="star-count">0</span> ⭐</div>
         </header>
 
-        <!-- Game Screen -->
-        <div id="game-screen">
-            <div class="word-stage">
-                <button onclick="playCurrentWord()" class="btn-sound" title="استمع للكلمة">
-                    <svg viewBox="0 0 24 24" width="40" height="40" fill="currentColor">
-                        <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.74 2.5-2.26 2.5-4.02zM14 3.23v2.06c2.89.86 5 3.54 5 6.71s-2.11 5.85-5 6.71v2.06c4.01-.91 7-4.49 7-8.77s-2.99-7.86-7-8.77z"/>
-                    </svg>
+        <h1 class="game-title">🚀 مغامرة الإملاء الذكي</h1>
+
+        <!-- شاشة اللعب الرئيسية -->
+        <div id="game-area">
+            <div class="audio-card">
+                <button onclick="playCurrentWord()" class="btn-listen" id="listen-btn" title="اضغط لسماع الكلمة">
+                    🔊
                 </button>
-                <div class="instruction-text">اضغط على السماعة واسمع الكلمة جيداً!</div>
+                <p class="listen-hint">اضغط على السماعة لتسمع الكلمة بوضوح</p>
             </div>
 
-            <div class="input-group">
-                <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off">
+            <div class="input-wrapper">
+                <input type="text" id="user-input" placeholder="اكتب الكلمة هنا..." autocomplete="off" spellcheck="false">
             </div>
 
-            <div class="action-buttons">
-                <button onclick="checkAnswer()" class="btn btn-primary">تحقق من الإجابة</button>
-                <button onclick="nextWord()" class="btn btn-secondary">الكلمة التالية ➡️</button>
+            <div class="controls-row">
+                <button onclick="checkAnswer()" class="btn btn-check" id="check-btn">تحقق من إجابتي ✅</button>
+                <button onclick="nextWord()" class="btn btn-next" id="next-btn">الكلمة التالية ⬅️</button>
             </div>
 
-            <div id="feedback-message" class="feedback"></div>
+            <div id="feedback-box" class="feedback-box"></div>
         </div>
 
-        <!-- Admin Section -->
-        <footer>
-            <button onclick="toggleAdminLogin()" class="btn-admin-toggle">🔒 لوحة المعلم</button>
+        <!-- شاشة النهاية (تظهر بعد الانتهاء من جميع الكلمات) -->
+        <div id="end-screen" class="end-screen hidden">
+            <div class="trophy-icon">🏆</div>
+            <h2>أحسنت يا بطل! أنهيت التحدي</h2>
+            <p class="final-score">مجموع نجومك: <span id="final-stars">0</span> ⭐</p>
+            <button onclick="restartGame()" class="btn btn-restart">إعادة التحدي من البداية 🔄</button>
+        </div>
+
+        <!-- قسم دخول المعلم -->
+        <footer class="app-footer">
+            <button onclick="toggleLoginBox()" class="btn-teacher-link">🔒 دخول المعلم</button>
             
-            <div id="admin-login-modal" class="admin-modal hidden">
-                <input type="password" id="admin-pass" placeholder="أدخل كلمة المرور">
-                <button onclick="verifyAdmin()" class="btn-verify">دخول</button>
+            <div id="login-box" class="login-box hidden">
+                <input type="password" id="admin-password" placeholder="أدخل رمز المعلم">
+                <button onclick="loginAdmin()" class="btn-login-submit">دخول</button>
             </div>
         </footer>
     </div>
 
-    <!-- Admin Panel Modal -->
-    <div id="admin-panel" class="settings-modal hidden">
-        <div class="modal-content">
-            <h2>⚙️ لوحة تحكم المعلم</h2>
-            
-            <div class="setting-group">
-                <h3>قائمة كلمات الإملاء:</h3>
-                <div id="words-inputs-list"></div>
-                <button onclick="addWordInput('')" class="btn-add">+ إضافة كلمة جديدة</button>
+    <!-- نافذة لوحة تحكم المعلم (مخفية تماماً ولا تظهر إلا بعد إدخال الرمز الصحيح) -->
+    <div id="teacher-modal" class="modal-overlay hidden">
+        <div class="modal-card">
+            <div class="modal-header">
+                <h2>⚙️ إعدادات المعلم</h2>
+                <button onclick="closeTeacherPanel()" class="btn-close">✖</button>
             </div>
 
-            <hr>
+            <div class="modal-body">
+                <label class="section-label">قائمة كلمات الإملاء (يُفضل كتابتها بالتشكيل):</label>
+                <div id="words-container" class="words-list"></div>
+                <button onclick="addWordField('')" class="btn-add-word">+ إضافة كلمة جديدة</button>
 
-            <div class="setting-group">
-                <h3>إيميل المتابعة:</h3>
-                <input type="email" id="admin-email" placeholder="teacher@example.com">
+                <hr class="divider">
+
+                <label class="section-label">بريد المتابعة الإلكتروني:</label>
+                <input type="email" id="teacher-email" class="modal-input" placeholder="teacher@school.com">
             </div>
 
-            <div class="modal-actions">
-                <button onclick="saveAdminSettings()" class="btn btn-save">حفظ ومتابعة اللعب</button>
+            <div class="modal-footer">
+                <button onclick="saveSettings()" class="btn btn-save">حفظ التغييرات وبدء اللعب 💾</button>
             </div>
         </div>
     </div>
